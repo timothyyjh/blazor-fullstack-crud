@@ -1,0 +1,69 @@
+﻿@page "/person"
+@page "/person/{id:int}"
+@inject IPersonService PersonService
+
+@if (Id == null)
+{
+    <PageTitle>Create a new person</PageTitle>
+    <h3>Create a new person</h3>
+}
+else
+{
+    <PageTitle>Edit @person.FirstName @person.LastName</PageTitle>
+    <h3>Edit @person.FirstName @person.LastName</h3>
+}
+
+<EditForm Model="person" OnSubmit="HandleSubmit">
+    <div>
+        <label for="firstname">First Name</label>
+        <InputText id="firstname" @bind-Value="person.FirstName" class="form-control"></InputText>
+    </div>
+    <div>
+        <label for="lastname">Last Name</label>
+        <InputText id="Lastname" @bind-Value="person.LastName" class="form-control"></InputText>
+    </div>
+    <div>
+        <label for="emailaddress">Email Address</label>
+        <InputText id="emailaddress" @bind-Value="person.EmailAddress" class="form-control"></InputText>
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">@btnText</button>
+    <button type="button" class="btn btn-danger" @onclick="DeletePerson">Delete Person</button>
+</EditForm>
+
+@code {
+    // To use ID, you need parameter attribute
+    [Parameter]
+    public int? Id { get; set; }
+
+    string btnText = string.Empty;
+
+    Person person = new Person { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        btnText = Id == null ? "Save New Person" : "Update Person";        
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        person = await PersonService.GetSinglePerson((int)Id);
+    }
+
+    async Task HandleSubmit()
+    {
+        if (Id == null)
+        {
+            await PersonService.CreatePerson(person);
+        }
+        else
+        {
+            await PersonService.UpdatePerson(person);
+        }
+    }
+
+    async Task DeletePerson()
+    {
+        await PersonService.DeletePerson(person.Id);
+    }
+}
